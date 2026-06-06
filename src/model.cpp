@@ -7,7 +7,8 @@ Model::Model(): n_bodies(),
                 n_threads(),
                 m(), r0(), v0(),
                 states(), calc_time(), energy(), angular_momentum(),
-                I(), P() {}
+                I(), P(),
+                ready(true), progress(0), do_calculations(true) {}
 
 Model::~Model() {
     if (I) {
@@ -36,9 +37,6 @@ void Model::set_integrator_type(Integrator_type type) {
     case Integrator_type::rk4:
         I = new RK4;
         break;
-    case Integrator_type::adaptive_rk4:
-        I = new Adaptive_RK4;
-        break;
     default:
         break;
     }
@@ -59,19 +57,19 @@ void Model::set_potential_type(Potential_type type) {
     }
 }
 
-void Model::set_potential_params(std::vector<double> params) {
-    if (P == nullptr) {
-        throw Incorrect_input("Set potential type!");
-    }
-    try {
-        P->set_params(params);
-    }
-    catch (...) {
-        throw;
-    }
-}
-
 void Model::start_calculation() {
+    if (!ready) {
+        return;
+    }
+
+    states = std::vector<std::vector<vec3d>>();
+    angular_momentum = std::vector<vec3d>();
+    energy = std::vector<double>();
+    calc_time = std::vector<double>();
+
+    ready = false;
+    do_calculations = true;
+
     if (P == nullptr) {
         throw Incorrect_input("Set potential type!");
     }
@@ -79,8 +77,11 @@ void Model::start_calculation() {
         throw Incorrect_input("Set integrator type!");
     }
 
+    // for (int i = 0; i < n_bodies; i++) {
+    //     std::cout << m[i] << " " << r0[i] << " " << v0[i] << "\n";
+    // }
+
     int n_steps = int(time_lim / time_step);
-    int n_saves = int(time_lim / state_save_step);
     int save_step = int(state_save_step / time_step);
 
     std::vector<vec3d> curr_state(2 * n_bodies);
@@ -99,9 +100,11 @@ void Model::start_calculation() {
     }
 
     double curr_energy;
-    bool calc_energy = false;;
+    bool calc_energy = false;
 
-    for (int i = 0; i < n_steps; i++) {
+    for (int i = 0; (i < n_steps) && do_calculations; i++) {
+        progress = 1.0 * i / n_steps;
+        auto start = std::chrono::high_resolution_clock::now();
         if (i % save_step == 0) {
             for (int j = 0; j < n_bodies; j++) {
                 state_for_save[j] = curr_state[j];
@@ -120,9 +123,14 @@ void Model::start_calculation() {
 
         if (i % save_step == 0) {
             energy.push_back(curr_energy);
-            calc_energy = false;;
+            calc_energy = false;
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        double duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        
+        calc_time.push_back(duration);
     }
+    ready = true;
 }
 
 vec3d Model::calc_angular_momentum(std::vector<vec3d> state) {
