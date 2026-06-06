@@ -1,11 +1,11 @@
 #include "vec3d.h"
 
 
-// vec3d::vec3d(double r, double phi_rad, double theta_rad) {
-//     x = r * cos(phi_rad) * cos(theta_rad);
-//     y = r * sin(phi_rad) * cos(theta_rad);
-//     z = r * sin(theta_rad);
-// }
+vec3d::vec3d(double r, double phi_rad, double theta_rad, bool polar) {
+    x = r * cos(phi_rad) * cos(theta_rad);
+    y = r * sin(phi_rad) * cos(theta_rad);
+    z = r * sin(theta_rad);
+}
 
 vec3d vec3d::operator=(const vec3d &a) {
     x = a.x;
