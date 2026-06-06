@@ -28,6 +28,9 @@ class Model {
     Potential *P;
 
     vec3d calc_angular_momentum(std::vector<vec3d> state);
+    bool ready;
+    double progress;
+    bool do_calculations;
 public:
     Model();
     ~Model();
@@ -44,21 +47,17 @@ public:
     }
     void set_integrator_type(Integrator_type type);
     void set_potential_type(Potential_type type);
-    void set_potential_params(std::vector<double> params);
-    
-    inline int get_n_bodies() { return n_bodies; }
-    inline double get_time_step() { return time_step; }
-    inline double get_time_lim() { return time_lim; }
-    inline double get_state_save_step() { return state_save_step; }
-    inline int get_n_threads() { return n_threads; }
-
 
     void start_calculation();
-    // void pause_calculation();
-    // void stop_calculation();
+    inline void stop_calculation() { do_calculations = false; }
 
-    
+    inline bool is_ready() { return ready; }
+    inline double get_progress() { return progress; }
 
+    inline std::vector<std::vector<vec3d>> get_states() { return states; }
+    inline std::vector<double> get_calc_time() { return calc_time; }
+    inline std::vector<double> get_energy() { return energy; }
+    inline std::vector<vec3d> get_angular_momentum() { return angular_momentum; }
 };
 
 
