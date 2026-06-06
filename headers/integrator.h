@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <thread>
+#include <functional>
+#include <future>
 #include "vec3d.h"
 #include "potentials.h"
 
@@ -60,15 +62,6 @@ class RK4: public Integrator {
 public:
     RK4(): Integrator() {};
     virtual ~RK4() {}
-    virtual std::vector<vec3d> integration_step(const std::vector<double> &m, const std::vector<vec3d> &state, double time_step, int n_threads, Potential *P,
-                                                bool calc_energy, double *energy) override;
-};
-
-
-class Adaptive_RK4: public Integrator {
-public:
-    Adaptive_RK4(): Integrator() {};
-    virtual ~Adaptive_RK4() {}
     virtual std::vector<vec3d> integration_step(const std::vector<double> &m, const std::vector<vec3d> &state, double time_step, int n_threads, Potential *P,
                                                 bool calc_energy, double *energy) override;
 };
